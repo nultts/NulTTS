@@ -1,0 +1,249 @@
+<!DOCTYPE html> <!-- Frontend -->
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS Player - NUL Studio</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-color: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: center;
+            color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        textarea, select, input[type="range"] {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            padding: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        textarea:focus, select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .range-value {
+            font-size: 0.875rem;
+            width: 40px;
+            text-align: right;
+            color: var(--text-secondary);
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.875rem;
+            margin-top: 10px;
+            display: none;
+            text-align: center;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Text To Speech</h2>
+
+    <div class="form-group">
+        <label for="textInput">Nội dung văn bản</label>
+        <textarea id="textInput" placeholder="Nhập văn bản cần đọc tại đây..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="voiceSelect">Chọn giọng đọc</label>
+        <select id="voiceSelect">
+            <option value="Adam">Adam</option>
+            <option value="Minh Anh">Minh Anh</option>
+            <option value="Nam công nghệ">Nam công nghệ</option>
+            <option value="Nam trầm ấm">Nam trầm ấm</option>
+            <option value="Ngọc Huyền">Ngọc Huyền</option>
+            <option value="Nhỏ ngọt ngào">Nhỏ ngọt ngào</option>
+            <option value="Thanh niên tự tin">Thanh niên tự tin</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="speedInput">Tốc độ đọc</label>
+        <div class="range-container">
+            <input type="range" id="speedInput" min="0.5" max="2.0" step="0.1" value="1.0">
+            <span class="range-value" id="speedValue">1.0x</span>
+        </div>
+    </div>
+
+    <button id="generateBtn">Tạo giọng nói</button>
+
+    <div id="errorMessage" class="error-message"></div>
+
+    <audio id="audioPlayer" controls></audio>
+</div>
+
+<script>
+    const speedInput = document.getElementById('speedInput');
+    const speedValue = document.getElementById('speedValue');
+    const generateBtn = document.getElementById('generateBtn');
+    const textInput = document.getElementById('textInput');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const errorMessage = document.getElementById('errorMessage');
+
+    speedInput.addEventListener('input', (e) => {
+        speedValue.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+    });
+
+    generateBtn.addEventListener('click', async () => {
+        const text = textInput.value.trim();
+        const voice = voiceSelect.value;
+        const speed = parseFloat(speedInput.value);
+
+        if (!text) {
+            showError("Vui lòng nhập nội dung văn bản !");
+            return;
+        }
+
+        hideError();
+        setLoading(true);
+
+        try {
+            const response = await fetch('https://nultts-proxy.2nul.dpdns.org/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text, voice, speed })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({ detail: 'Lỗi không xác định' }));
+                throw new Error(errData.detail || 'Không thể tạo âm thanh');
+            }
+
+            const blob = await response.blob();
+            const audioUrl = URL.createObjectURL(blob);
+            
+            audioPlayer.src = audioUrl;
+            audioPlayer.style.display = 'block';
+            audioPlayer.play();
+        } catch (err) {
+            showError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    });
+
+    function setLoading(isLoading) {
+        if (isLoading) {
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Đang xử lý...';
+        } else {
+            generateBtn.disabled = false;
+            generateBtn.textContent = 'Tạo giọng nói';
+        }
+    }
+
+    function showError(msg) {
+        errorMessage.textContent = msg;
+        errorMessage.style.display = 'block';
+    }
+
+    function hideError() {
+        errorMessage.style.display = 'none';
+        errorMessage.textContent = '';
+    }
+</script>
+
+</body>
+</html>
