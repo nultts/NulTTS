@@ -1,19 +1,42 @@
-<!DOCTYPE html> <!-- Frontend -->
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TTS Player - NUL Studio</title>
+    <title>NulTTS</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --text-color: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border-color: #334155;
-            --error-color: #ef4444;
+            --bg-color: #f4f4f5;
+            --card-bg: #ffffff;
+            --text-color: #09090b;
+            --text-secondary: #71717a;
+            --border-color: #18181b;
+            --error-color: #dc2626;
+            --button-bg: #18181b;
+            --button-hover: #27272a;
+            --input-bg: #ffffff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #09090b;
+                --card-bg: #18181b;
+                --text-color: #f4f4f5;
+                --text-secondary: #a1a1aa;
+                --border-color: #27272a;
+                --error-color: #ef4444;
+                --button-bg: #f4f4f5;
+                --button-hover: #e4e4e7;
+                --input-bg: #09090b;
+            }
+
+            button {
+                color: #09090b !important;
+            }
+
+            textarea, select, input[type="range"] {
+                color: #f4f4f5;
+            }
         }
 
         * {
@@ -35,19 +58,21 @@
 
         .container {
             background-color: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 24px;
             width: 100%;
             max-width: 500px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
+            box-shadow: none;
         }
 
         h2 {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             font-size: 1.5rem;
+            font-weight: 700;
             text-align: center;
-            color: var(--accent-color);
+            color: var(--text-color);
+            border: none;
         }
 
         .form-group {
@@ -58,19 +83,20 @@
             display: block;
             margin-bottom: 6px;
             font-size: 0.875rem;
+            font-weight: 500;
             color: var(--text-secondary);
         }
 
         textarea, select, input[type="range"] {
             width: 100%;
-            background-color: var(--bg-color);
+            background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 6px;
             color: var(--text-color);
             padding: 10px;
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.15s;
         }
 
         textarea {
@@ -79,7 +105,7 @@
         }
 
         textarea:focus, select:focus {
-            border-color: var(--accent-color);
+            border-color: var(--text-color);
         }
 
         .range-container {
@@ -93,24 +119,25 @@
             width: 40px;
             text-align: right;
             color: var(--text-secondary);
+            font-weight: 600;
         }
 
         button {
             width: 100%;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
+            background-color: var(--button-bg);
+            color: #ffffff;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 12px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 10px;
+            transition: background-color 0.15s;
+            margin-top: 8px;
         }
 
         button:hover {
-            background-color: var(--accent-hover);
+            background-color: var(--button-hover);
         }
 
         button:disabled {
@@ -121,15 +148,17 @@
         .error-message {
             color: var(--error-color);
             font-size: 0.875rem;
-            margin-top: 10px;
+            margin-top: 12px;
             display: none;
             text-align: center;
+            font-weight: 500;
         }
 
         audio {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 16px;
             display: none;
+            border-radius: 6px;
         }
     </style>
 </head>
@@ -167,7 +196,6 @@
     <button id="generateBtn">Tạo giọng nói</button>
 
     <div id="errorMessage" class="error-message"></div>
-
     <audio id="audioPlayer" controls></audio>
 </div>
 
@@ -244,6 +272,5 @@
         errorMessage.textContent = '';
     }
 </script>
-
 </body>
 </html>
